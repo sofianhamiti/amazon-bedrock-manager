@@ -40,3 +40,13 @@ class LambdaFunction(Construct):
             role=self.lambda_role,
             timeout=Duration.seconds(60),
         )
+        # ==================================================
+        # ============ PROVISIONED CONCURRENCY =============
+        # ==================================================
+        self.alias = lambda_.Alias(
+            scope=self,
+            id="lambda_alias",
+            alias_name="Prod",
+            version=self.lambda_function.current_version,
+            provisioned_concurrent_executions=100,
+        )
