@@ -1,2 +1,5 @@
 aws-cdk-lib==2.93.0
 constructs==10.2.70
+aws_lambda_powertools
+lambda_image/sdk/boto3-1.26.142-py3-none-any.whl
+lambda_image/sdk/botocore-1.29.142-py3-none-any.whl

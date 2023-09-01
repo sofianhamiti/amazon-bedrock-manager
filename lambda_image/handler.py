@@ -3,7 +3,7 @@ import boto3
 from botocore.config import Config
 from aws_lambda_powertools import Logger
 
-# CREATE BEDROCK CLIENT
+# Bedrock client
 bedrock = boto3.client(
     service_name="bedrock",
     region_name="us-east-1",
@@ -11,62 +11,55 @@ bedrock = boto3.client(
     config=Config(retries={"max_attempts": 3, "mode": "adaptive"}),
 )
 
-# CREATE LOGGER FROM LAMBDA POWER TOOLS
+# Logger for CloudWatch logs
 logger = Logger()
 
 
+def invoke_bedrock(event_body, model_id):
+    payload = prepare_payload(event_body)
+    response = bedrock.invoke_model(
+        body=payload,
+        modelId=model_id,
+        accept="application/json",
+        contentType="application/json",
+    )
+    if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
+        # Get text reponse from the model
+        completion = json.loads(response.get("body").read())["completion"]
+
+        log_api_call(
+            user="user1",
+            prompt=event_body["inputs"],
+            completion=completion,
+            model_id=model_id,
+        )
+        return completion
+    else:
+        raise Exception(
+            "Bedrock API call failed with status "
+            + str(response["ResponseMetadata"]["HTTPStatusCode"])
+        )
+
+
+def prepare_payload(event_body):
+    return json.dumps({"prompt": event_body["inputs"], **event_body["parameters"]})
+
+
+def log_api_call(user, prompt, completion, model_id):
+    logger.append_keys(user=user)
+    logger.append_keys(model_id=model_id)
+    logger.append_keys(prompt=prompt)
+    logger.append_keys(completion=completion)
+    logger.info("api call")
+
+
 def lambda_handler(event, context):
-    event_body = json.loads(event["body"])
-
     try:
-        # PREPARING PAYLOAD
-        model_id = event["headers"]["model_id"]
-        payload_body = json.dumps(
-            {**{"prompt": event_body["inputs"]}, **event_body["parameters"]}
+        completion = invoke_bedrock(
+            event_body=json.loads(event["body"]), model_id=event["headers"]["model_id"]
         )
-
-        # INVOKE BEDROCK
-        bedrock_response = bedrock.invoke_model(
-            body=payload_body,
-            modelId=model_id,
-            accept="application/json",
-            contentType="application/json",
-        )
-
-        # IF SUCCESS, SEND RESPONSE TO USER
-        if bedrock_response["ResponseMetadata"]["HTTPStatusCode"] == 200:
-            # LOG THE INPUT TOKEN SIZE
-            input_token_size = 256
-            logger.append_keys(user="user1")
-            logger.append_keys(model_id=model_id)
-            logger.append_keys(token_size=input_token_size)
-            logger.info("input")
-
-            response_body = json.loads(bedrock_response.get("body").read())[
-                "completion"
-            ]
-
-            # LOG THE OUTPUT TOKEN SIZE
-            output_token_size = 512
-            logger.append_keys(user="user1")
-            logger.append_keys(model_id=model_id)
-            logger.append_keys(token_size=output_token_size)
-            logger.info("output")
-
-            return {
-                "statusCode": 200,
-                "body": json.dumps([{"generated_text": response_body}]),
-            }
-        else:
-            # Status code was not 200, raise exception
-            raise Exception(
-                "Bedrock API call failed with status "
-                + str(bedrock_response["ResponseMetadata"]["HTTPStatusCode"])
-            )
+        return {"statusCode": 200, "body": json.dumps([{"generated_text": completion}])}
 
     except Exception as e:
         logger.exception(e)
-        return {
-            "statusCode": 500,
-            "body": json.dumps([{"generated_text": e}]),
-        }
+        return {"statusCode": 500, "body": json.dumps([{"error": str(e)}])}
