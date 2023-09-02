@@ -2,6 +2,7 @@ from constructs import Construct
 from aws_cdk import (
     aws_iam as iam,
     aws_lambda as lambda_,
+    aws_logs as logs,
     Duration,
 )
 
@@ -61,6 +62,7 @@ class LambdaFunction(Construct):
             memory_size=512,
             role=self.lambda_role,
             timeout=Duration.seconds(60),
+            log_retention=logs.RetentionDays.INFINITE,
         )
         # ==================================================
         # ============ PROVISIONED CONCURRENCY =============

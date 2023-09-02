@@ -15,7 +15,7 @@ bedrock = boto3.client(
 logger = Logger()
 
 
-def invoke_bedrock(event_body, model_id):
+def invoke_bedrock(event_body, model_id, user_id):
     payload = prepare_payload(event_body)
     response = bedrock.invoke_model(
         body=payload,
@@ -28,7 +28,7 @@ def invoke_bedrock(event_body, model_id):
         completion = json.loads(response.get("body").read())["completion"]
 
         log_api_call(
-            user="user1",
+            user_id=user_id,
             prompt=event_body["inputs"],
             completion=completion,
             model_id=model_id,
@@ -45,8 +45,8 @@ def prepare_payload(event_body):
     return json.dumps({"prompt": event_body["inputs"], **event_body["parameters"]})
 
 
-def log_api_call(user, prompt, completion, model_id):
-    logger.append_keys(user=user)
+def log_api_call(user_id, prompt, completion, model_id):
+    logger.append_keys(user_id=user_id)
     logger.append_keys(model_id=model_id)
     logger.append_keys(prompt=prompt)
     logger.append_keys(completion=completion)
@@ -56,7 +56,9 @@ def log_api_call(user, prompt, completion, model_id):
 def lambda_handler(event, context):
     try:
         completion = invoke_bedrock(
-            event_body=json.loads(event["body"]), model_id=event["headers"]["model_id"]
+            event_body=json.loads(event["body"]),
+            model_id=event["headers"]["model_id"],
+            user_id=event["headers"]["user_id"],
         )
         return {"statusCode": 200, "body": json.dumps([{"generated_text": completion}])}
 
