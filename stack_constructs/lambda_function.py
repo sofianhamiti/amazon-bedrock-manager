@@ -7,21 +7,43 @@ from aws_cdk import (
 
 
 class LambdaFunction(Construct):
-    def __init__(self, scope: Construct, id: str, function_name: str, directory: str):
+    def __init__(
+        self,
+        scope: Construct,
+        id: str,
+        function_name: str,
+        directory: str,
+        provisioned_concurrency: bool,
+    ):
         super().__init__(scope, id)
 
         # ==================================================
         # ================= IAM ROLE =======================
         # ==================================================
         self.lambda_role = iam.Role(
-            scope=self,
-            id="lambda_role",
-            role_name=function_name,
+            self,
+            "LambdaRole",
             assumed_by=iam.ServicePrincipal(service="lambda.amazonaws.com"),
             managed_policies=[
-                iam.ManagedPolicy.from_aws_managed_policy_name("AdministratorAccess")
+                iam.ManagedPolicy.from_aws_managed_policy_name("AWSLambdaExecute")
             ],
         )
+
+        self.sagemaker_policy = iam.Policy(
+            scope=self,
+            id="bedrock_access",
+            policy_name="bedrock-access",
+            statements=[
+                iam.PolicyStatement(
+                    effect=iam.Effect.ALLOW,
+                    actions=[
+                        "bedrock:*",
+                    ],
+                    resources=["*"],
+                )
+            ],
+        )
+        self.sagemaker_policy.attach_to_role(self.lambda_role)
 
         # ==================================================
         # =================== ECR IMAGE ====================
@@ -33,7 +55,7 @@ class LambdaFunction(Construct):
         # ==================================================
         self.lambda_function = lambda_.DockerImageFunction(
             scope=self,
-            id="lambda",
+            id="lambda_function",
             function_name=function_name,
             code=self.ecr_image,
             memory_size=512,
@@ -43,10 +65,11 @@ class LambdaFunction(Construct):
         # ==================================================
         # ============ PROVISIONED CONCURRENCY =============
         # ==================================================
-        self.alias = lambda_.Alias(
-            scope=self,
-            id="lambda_alias",
-            alias_name="Prod",
-            version=self.lambda_function.current_version,
-            provisioned_concurrent_executions=100,
-        )
+        if provisioned_concurrency:
+            self.alias = lambda_.Alias(
+                scope=self,
+                id="lambda_alias",
+                alias_name="Prod",
+                version=self.lambda_function.current_version,
+                provisioned_concurrent_executions=100,
+            )
