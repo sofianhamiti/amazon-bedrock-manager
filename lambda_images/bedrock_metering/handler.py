@@ -6,6 +6,10 @@ from aws_lambda_powertools import Logger
 logger = Logger()
 
 
+def count_tokens(text):
+    return True
+
+
 def lambda_handler(event, context):
     try:
         logger.info(event)
@@ -13,4 +17,4 @@ def lambda_handler(event, context):
 
     except Exception as e:
         logger.exception(e)
-        return {"statusCode": 500, "body": json.dumps([{"error": str(e)}])}
+        return {"statusCode": 500, "body": str(e)}
