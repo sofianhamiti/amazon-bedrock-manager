@@ -22,6 +22,7 @@ class APIStack(Stack):
 
         aggregator_name = "usage-aggregator"
         directory_usage_aggregator = "lambda_images/usage_aggregator"
+        cloudwatch_log_trigger = f"/aws/lambda/{api_name}"
 
         # ==================================================
         # ================== BEDROCK API ===================
@@ -32,6 +33,7 @@ class APIStack(Stack):
             function_name=api_name,
             directory=directory_bedrock_api,
             provisioned_concurrency=False,
+            cloudwatch_trigger_name=None,
         )
 
         api = API(
@@ -50,13 +52,14 @@ class APIStack(Stack):
             function_name=aggregator_name,
             directory=directory_usage_aggregator,
             provisioned_concurrency=False,
+            cloudwatch_trigger_name=cloudwatch_log_trigger,
         )
 
-        usage_aggregator_scheduler = LambdaFunctionScheduler(
-            scope=self,
-            id="usage_aggregator_scheduler",
-            lambda_function=lambda_function_usage_aggregator.lambda_function,
-        )
+        # scheduler_usage_aggregator = LambdaFunctionScheduler(
+        #     scope=self,
+        #     id="usage_aggregator_scheduler",
+        #     lambda_function=lambda_function_usage_aggregator.lambda_function,
+        # )
 
         # ==================================================
         # =================== OUTPUTS ======================

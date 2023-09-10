@@ -8,7 +8,7 @@ logger = Logger()
 
 def lambda_handler(event, context):
     try:
-        logger.info("test")
+        logger.info(event)
         return {"statusCode": 200, "body": "OK"}
 
     except Exception as e:

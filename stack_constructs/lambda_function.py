@@ -3,6 +3,8 @@ from aws_cdk import (
     aws_iam as iam,
     aws_lambda as lambda_,
     aws_logs as logs,
+    aws_events as events,
+    aws_events_targets as targets,
     Duration,
 )
 
@@ -15,6 +17,7 @@ class LambdaFunction(Construct):
         function_name: str,
         directory: str,
         provisioned_concurrency: bool,
+        cloudwatch_trigger_name: str,
     ):
         super().__init__(scope, id)
 
@@ -64,6 +67,7 @@ class LambdaFunction(Construct):
             timeout=Duration.seconds(60),
             log_retention=logs.RetentionDays.INFINITE,
         )
+
         # ==================================================
         # ============ PROVISIONED CONCURRENCY =============
         # ==================================================
@@ -74,4 +78,18 @@ class LambdaFunction(Construct):
                 alias_name="Prod",
                 version=self.lambda_function.current_version,
                 provisioned_concurrent_executions=100,
+            )
+
+        # CloudWatch Log Group Trigger
+        if cloudwatch_trigger_name:
+            self.trigger = events.Rule(
+                scope=self,
+                id="CloudWatchLogsTrigger",
+                event_pattern=events.EventPattern(
+                    source=["aws.logs"],
+                    detail={
+                        "requestParameters": {"logGroupName": [cloudwatch_trigger_name]}
+                    },
+                ),
+                targets=[targets.LambdaFunction(self.lambda_function)],
             )
