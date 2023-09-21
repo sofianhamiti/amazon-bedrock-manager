@@ -7,7 +7,6 @@ from aws_cdk import (
 
 from stack_constructs.api import API
 from stack_constructs.lambda_function import LambdaFunction
-from stack_constructs.scheduler import LambdaFunctionScheduler
 
 
 class APIStack(Stack):
@@ -47,7 +46,7 @@ class APIStack(Stack):
         # ==================================================
         lambda_function_bedrock_metering = LambdaFunction(
             scope=self,
-            id="lambda_function_usage_aggregator",
+            id="lambda_function_metering",
             function_name=metering_name,
             directory=directory_usage_aggregator,
             provisioned_concurrency=False,

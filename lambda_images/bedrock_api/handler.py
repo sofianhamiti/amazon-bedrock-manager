@@ -20,7 +20,7 @@ def prepare_bedrock_payload(event_body):
     return json.dumps({"prompt": event_body["inputs"], **event_body["parameters"]})
 
 
-def invoke_bedrock(payload, model_id, user_id):
+def invoke_bedrock(payload, model_id):
     response = bedrock.invoke_model(
         body=payload,
         modelId=model_id,
@@ -40,15 +40,17 @@ def invoke_bedrock(payload, model_id, user_id):
 
 
 def log_api_call(payload):
+    # log the api call with the metering lambda function
     lambda_client.invoke(
         FunctionName=metering_function_name,
-        InvocationType="Event",
+        InvocationType="Event",  # Use asynchronous invocation
         Payload=json.dumps(payload),
     )
 
 
 def lambda_handler(event, context):
     try:
+        print(event)
         bedrock_payload = prepare_bedrock_payload(json.loads(event["body"]))
         user_id = event["headers"]["user_id"]
         model_id = event["headers"]["model_id"]
@@ -56,7 +58,6 @@ def lambda_handler(event, context):
         completion = invoke_bedrock(
             payload=bedrock_payload,
             model_id=model_id,
-            user_id=user_id,
         )
 
         log_api_call(
@@ -67,7 +68,6 @@ def lambda_handler(event, context):
                 "completion": completion,
             }
         )
-
         return {"statusCode": 200, "body": json.dumps([{"generated_text": completion}])}
 
     except Exception as e:

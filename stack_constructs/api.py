@@ -1,5 +1,5 @@
 from constructs import Construct
-from aws_cdk import aws_apigateway as apigw, aws_logs as logs
+from aws_cdk import aws_apigateway as apigw
 
 
 class API(Construct):
@@ -14,4 +14,7 @@ class API(Construct):
             rest_api_name=api_name,
             handler=lambda_function.current_version,
             proxy=True,
+            # default_method_options=apigw.MethodOptions(
+            #     authorization_type=apigw.AuthorizationType.IAM
+            # ),
         )
