@@ -69,7 +69,9 @@ def lambda_handler(event, context):
             }
         )
         return {"statusCode": 200, "body": json.dumps([{"generated_text": completion}])}
+        # return {"statusCode": 200, "body": completion}
 
     except Exception as e:
         print(e)
         return {"statusCode": 500, "body": json.dumps([{"generated_text": str(e)}])}
+        # return {"statusCode": 500, "body": str(e)}

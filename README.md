@@ -1,1 +1,1 @@
-# amazon-bedrock-manager
+# amazon-bedrock-api-gateway

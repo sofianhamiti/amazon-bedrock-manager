@@ -31,7 +31,7 @@ class LambdaFunction(Construct):
             ],
         )
 
-        self.sagemaker_policy = iam.Policy(
+        self.bedrock_policy = iam.Policy(
             scope=self,
             id="bedrock_access",
             policy_name="bedrock-and-lambda-access",
@@ -52,7 +52,7 @@ class LambdaFunction(Construct):
                 ),
             ],
         )
-        self.sagemaker_policy.attach_to_role(self.lambda_role)
+        self.bedrock_policy.attach_to_role(self.lambda_role)
 
         # ==================================================
         # =================== ECR IMAGE ====================
@@ -74,8 +74,7 @@ class LambdaFunction(Construct):
             code=self.ecr_image,
             environment=environment,
             memory_size=512,
-            timeout=Duration.seconds(60),
-            log_retention=logs.RetentionDays.INFINITE,
+            timeout=Duration.seconds(60)
         )
 
         # ==================================================
