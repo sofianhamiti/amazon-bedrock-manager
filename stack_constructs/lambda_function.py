@@ -2,7 +2,6 @@ from constructs import Construct
 from aws_cdk import (
     aws_iam as iam,
     aws_lambda as lambda_,
-    aws_logs as logs,
     Duration,
 )
 
@@ -70,7 +69,7 @@ class LambdaFunction(Construct):
             code=self.ecr_image,
             environment=environment,
             memory_size=512,
-            timeout=Duration.seconds(60)
+            timeout=Duration.seconds(60),
         )
 
         # ==================================================
