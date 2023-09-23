@@ -1,28 +1,24 @@
 from constructs import Construct
-from aws_cdk import (
-    CfnOutput,
-    Stack,
-    App,
-)
+from aws_cdk import CfnOutput, Stack, App, Tags
 
 from stack_constructs.api import API
 from stack_constructs.lambda_function import LambdaFunction
 
 
-class APIStack(Stack):
-    def __init__(self, scope: Construct, id: str, **kwargs) -> None:
+class BedrockAPIStack(Stack):
+    def __init__(self, scope: Construct, id: str, cost_center: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         # ==================================================
         # ================= PARAMETERS =====================
         # ==================================================
-        api_name = "bedrock-api"
+        api_name = f"{cost_center}-bedrock-api"
         directory_bedrock_api = "lambda_images/bedrock_api"
 
-        authorizer_name = "bedrock-authorizer"
+        authorizer_name = f"{cost_center}-bedrock-authorizer"
         directory_api_authorizer = "lambda_images/api_authorizer"
 
-        metering_name = "bedrock-metering"
+        metering_name = f"{cost_center}-bedrock-metering"
         directory_usage_aggregator = "lambda_images/bedrock_metering"
 
         # ==================================================
@@ -54,7 +50,7 @@ class APIStack(Stack):
         )
 
         # ==================================================
-        # ==================== METERING ====================
+        # =================== METERING =====================
         # ==================================================
         lambda_function_bedrock_metering = LambdaFunction(
             scope=self,
@@ -74,6 +70,16 @@ class APIStack(Stack):
         )
 
 
+# ==================================================
+# ============== STACK WITH COST CENTER ============
+# ==================================================
 app = App()
-APIStack(app, "APIStack")
+cost_center = "abc"
+
+api_stack = BedrockAPIStack(
+    scope=app, id=f"{cost_center}-Bedrock-API", cost_center=cost_center
+)
+# Add a cost tag to all constructs in the stack
+Tags.of(api_stack).add("CostCenter", cost_center)
+
 app.synth()
