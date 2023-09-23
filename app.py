@@ -15,11 +15,11 @@ class BedrockAPIStack(Stack):
         api_name = f"{cost_center}-bedrock-api"
         directory_bedrock_api = "lambda_images/bedrock_api"
 
-        authorizer_name = f"{cost_center}-bedrock-authorizer"
-        directory_api_authorizer = "lambda_images/api_authorizer"
+        # authorizer_name = f"{cost_center}-bedrock-authorizer"
+        # directory_api_authorizer = "lambda_images/api_authorizer"
 
         metering_name = f"{cost_center}-bedrock-metering"
-        directory_usage_aggregator = "lambda_images/bedrock_metering"
+        directory_bedrock_metering = "lambda_images/bedrock_metering"
 
         # ==================================================
         # ================== BEDROCK API ===================
@@ -29,24 +29,26 @@ class BedrockAPIStack(Stack):
             id="lambda_function_bedrock_api",
             function_name=api_name,
             directory=directory_bedrock_api,
-            provisioned_concurrency=False,
-            metering_function_name=metering_name,
+            environment={
+                "METERING_FUNCTION": metering_name,
+                "COST_CENTER": cost_center,
+            },
         )
 
-        lambda_function_api_authorizer = LambdaFunction(
-            scope=self,
-            id="lambda_function_api_authorizer",
-            function_name=authorizer_name,
-            directory=directory_api_authorizer,
-            provisioned_concurrency=False,
-        )
+        # lambda_function_api_authorizer = LambdaFunction(
+        #     scope=self,
+        #     id="lambda_function_api_authorizer",
+        #     function_name=authorizer_name,
+        #     directory=directory_api_authorizer,
+        #     provisioned_concurrency=False,
+        # )
 
         api = API(
             scope=self,
-            id="api",
+            id="bedrock-api",
             api_name=api_name,
             lambda_function_bedrock_api=lambda_function_bedrock_api.lambda_function,
-            lambda_function_api_authorizer=lambda_function_api_authorizer.lambda_function,
+            # lambda_function_api_authorizer=lambda_function_api_authorizer.lambda_function,
         )
 
         # ==================================================
@@ -54,10 +56,9 @@ class BedrockAPIStack(Stack):
         # ==================================================
         lambda_function_bedrock_metering = LambdaFunction(
             scope=self,
-            id="lambda_function_metering",
+            id="lambda_function_bedrock_metering",
             function_name=metering_name,
-            directory=directory_usage_aggregator,
-            provisioned_concurrency=False,
+            directory=directory_bedrock_metering,
         )
 
         # ==================================================
@@ -73,9 +74,9 @@ class BedrockAPIStack(Stack):
 # ==================================================
 # ============== STACK WITH COST CENTER ============
 # ==================================================
-app = App()
 cost_center = "abc"
 
+app = App()
 api_stack = BedrockAPIStack(
     scope=app, id=f"{cost_center}-Bedrock-API", cost_center=cost_center
 )

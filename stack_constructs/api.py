@@ -9,7 +9,7 @@ class API(Construct):
         id: str,
         api_name: str,
         lambda_function_bedrock_api: str,
-        lambda_function_api_authorizer: str,
+        lambda_function_api_authorizer: str = None,
     ):
         super().__init__(scope, id)
 

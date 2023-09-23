@@ -6,6 +6,7 @@ from botocore.config import Config
 # Lambda client
 lambda_client = boto3.client("lambda")
 metering_function_name = os.environ["METERING_FUNCTION"]
+cost_center = os.environ["COST_CENTER"]
 
 # Bedrock client
 bedrock = boto3.client(
@@ -52,7 +53,6 @@ def lambda_handler(event, context):
     try:
         print(event)
         bedrock_payload = prepare_bedrock_payload(json.loads(event["body"]))
-        user_id = event["headers"]["user_id"]
         model_id = event["headers"]["model_id"]
 
         completion = invoke_bedrock(
@@ -62,7 +62,7 @@ def lambda_handler(event, context):
 
         log_api_call(
             {
-                "user_id": user_id,
+                "cost_center": cost_center,
                 "model_id": model_id,
                 "prompt": bedrock_payload,
                 "completion": completion,

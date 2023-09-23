@@ -14,8 +14,8 @@ class LambdaFunction(Construct):
         id: str,
         function_name: str,
         directory: str,
+        environment: dict = None,
         provisioned_concurrency: int = None,
-        metering_function_name: str = None,
     ):
         super().__init__(scope, id)
 
@@ -62,10 +62,6 @@ class LambdaFunction(Construct):
         # ==================================================
         # ================ LAMBDA FUNCTION =================
         # ==================================================
-        environment = {}
-        if metering_function_name:
-            environment["METERING_FUNCTION"] = metering_function_name
-
         self.lambda_function = lambda_.DockerImageFunction(
             scope=self,
             id="lambda_function",
