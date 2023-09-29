@@ -2,19 +2,19 @@ import os
 import json
 import boto3
 from botocore.config import Config
+from aws_lambda_powertools import Logger
 
-# Lambda client
-lambda_client = boto3.client("lambda")
-metering_function_name = os.environ["METERING_FUNCTION"]
 cost_center = os.environ["COST_CENTER"]
 
 # Bedrock client
 bedrock = boto3.client(
-    service_name="bedrock",
+    service_name="bedrock-runtime",
     region_name="us-east-1",
-    endpoint_url="https://bedrock.us-east-1.amazonaws.com",
     config=Config(retries={"max_attempts": 3, "mode": "adaptive"}),
 )
+
+# Logger for CloudWatch logs
+logger = Logger()
 
 
 def prepare_bedrock_payload(event_body):
@@ -29,9 +29,10 @@ def invoke_bedrock(payload, model_id):
         contentType="application/json",
     )
     if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
-        # Get text reponse from the model
+        # Get text reponse from the model and request ID to map request to cost centre
         completion = json.loads(response.get("body").read())["completion"]
-        return completion
+        request_id = response["ResponseMetadata"]["RequestId"]
+        return completion, request_id
 
     else:
         raise Exception(
@@ -40,34 +41,19 @@ def invoke_bedrock(payload, model_id):
         )
 
 
-def log_api_call(payload):
-    # log the api call with the metering lambda function
-    lambda_client.invoke(
-        FunctionName=metering_function_name,
-        InvocationType="Event",  # Use asynchronous invocation
-        Payload=json.dumps(payload),
-    )
-
-
 def lambda_handler(event, context):
     try:
-        print(event)
+        # print(event)
         bedrock_payload = prepare_bedrock_payload(json.loads(event["body"]))
         model_id = event["headers"]["model_id"]
 
-        completion = invoke_bedrock(
+        completion, request_id = invoke_bedrock(
             payload=bedrock_payload,
             model_id=model_id,
         )
 
-        log_api_call(
-            {
-                "cost_center": cost_center,
-                "model_id": model_id,
-                "prompt": bedrock_payload,
-                "completion": completion,
-            }
-        )
+        logger.info({"cost_center": cost_center, "request_id": request_id})
+
         return {"statusCode": 200, "body": json.dumps([{"generated_text": completion}])}
         # return {"statusCode": 200, "body": completion}
 

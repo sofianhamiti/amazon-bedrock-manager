@@ -3,6 +3,7 @@ from aws_cdk import CfnOutput, Stack, App, Tags
 
 from stack_constructs.api import API
 from stack_constructs.lambda_function import LambdaFunction
+from stack_constructs.scheduler import LambdaFunctionScheduler
 
 
 class BedrockAPIStack(Stack):
@@ -27,7 +28,6 @@ class BedrockAPIStack(Stack):
             function_name=api_name,
             directory=directory_bedrock_api,
             environment={
-                "METERING_FUNCTION": metering_name,
                 "COST_CENTER": cost_center,
             },
         )
@@ -47,6 +47,12 @@ class BedrockAPIStack(Stack):
             id="lambda_function_bedrock_metering",
             function_name=metering_name,
             directory=directory_bedrock_metering,
+        )
+
+        scheduler_usage_aggregator = LambdaFunctionScheduler(
+            scope=self,
+            id="usage_aggregator_scheduler",
+            lambda_function=lambda_function_bedrock_metering.lambda_function,
         )
 
         # ==================================================

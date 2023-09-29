@@ -37,7 +37,8 @@ def process_request(event):
 
 def lambda_handler(event, context):
     try:
-        process_request(event)
+        # process_request(event)
+        print("hello")
         return {"statusCode": 200, "body": "OK"}
     except Exception as e:
         logger.exception(e)
