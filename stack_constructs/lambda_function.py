@@ -13,6 +13,8 @@ class LambdaFunction(Construct):
         id: str,
         function_name: str,
         directory: str,
+        memory: int,
+        timeout: int,
         environment: dict = None,
         provisioned_concurrency: int = None,
     ):
@@ -68,8 +70,8 @@ class LambdaFunction(Construct):
             role=self.lambda_role,
             code=self.ecr_image,
             environment=environment,
-            memory_size=512,
-            timeout=Duration.seconds(60),
+            memory_size=memory,
+            timeout=Duration.seconds(timeout),
         )
 
         # ==================================================

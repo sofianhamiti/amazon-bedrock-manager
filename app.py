@@ -30,6 +30,8 @@ class BedrockAPIStack(Stack):
             environment={
                 "COST_CENTER": cost_center,
             },
+            memory=512,
+            timeout=60,
         )
 
         api = API(
@@ -47,12 +49,19 @@ class BedrockAPIStack(Stack):
             id="lambda_function_bedrock_metering",
             function_name=metering_name,
             directory=directory_bedrock_metering,
+            environment={
+                "LOG_GROUP_BEDROCK": "/aws/bedrock",
+                "LOG_GROUP_API": "/aws/lambda/abc-bedrock-api",
+            },
+            memory=1024,
+            timeout=120,
         )
 
-        scheduler_usage_aggregator = LambdaFunctionScheduler(
+        scheduler_bedrock_metering = LambdaFunctionScheduler(
             scope=self,
-            id="usage_aggregator_scheduler",
+            id="scheduler_bedrock_metering",
             lambda_function=lambda_function_bedrock_metering.lambda_function,
+            cron_scheduling_expression="cron(0 12 ? * * *)",
         )
 
         # ==================================================

@@ -52,7 +52,7 @@ def lambda_handler(event, context):
             model_id=model_id,
         )
 
-        logger.info({"cost_center": cost_center, "request_id": request_id})
+        logger.info({"cost_center": cost_center, "requestId": request_id})
 
         return {"statusCode": 200, "body": json.dumps([{"generated_text": completion}])}
         # return {"statusCode": 200, "body": completion}
