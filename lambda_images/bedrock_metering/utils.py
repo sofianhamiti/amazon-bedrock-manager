@@ -4,17 +4,17 @@ import datetime
 import pandas as pd
 
 MODEL_PRICES = {
-    "amazon.titan-tg1-large": {"input_cost": 0, "output_cost": 0},
-    "amazon.titan-e1t-medium": {"input_cost": 0, "output_cost": 0},
-    "amazon.titan-embed-g1-text-02": {"input_cost": 0, "output_cost": 0},
-    "stability.stable-diffusion-xl": {"input_cost": 0, "output_cost": 0},
-    "ai21.j2-grande-instruct": {"input_cost": 0, "output_cost": 0},
-    "ai21.j2-jumbo-instruct": {"input_cost": 0, "output_cost": 0},
-    "ai21.j2-mid": {"input_cost": 0, "output_cost": 0},
-    "ai21.j2-ultra": {"input_cost": 0, "output_cost": 0},
-    "anthropic.claude-instant-v1": {"input_cost": 0, "output_cost": 0},
-    "anthropic.claude-v1": {"input_cost": 0, "output_cost": 0},
-    "anthropic.claude-v2": {"input_cost": 11.02, "output_cost": 32.68},
+    "amazon.titan-tg1-large": {"input_cost": 0.0003, "output_cost": 0.0004},
+    "amazon.titan-e1t-medium": {"input_cost": 0.0013, "output_cost": 0.0017},
+    "amazon.titan-embed-g1-text-02": {"input_cost": 0.0001, "output_cost": 0},
+    "stability.stable-diffusion-xl": {"input_cost": 0.018, "output_cost": 0.036},
+    "ai21.j2-grande-instruct": {"input_cost": 0.0125, "output_cost": 0.0125},
+    "ai21.j2-jumbo-instruct": {"input_cost": 0.0125, "output_cost": 0.0125},
+    "ai21.j2-mid": {"input_cost": 0.0125, "output_cost": 0.0125},
+    "ai21.j2-ultra": {"input_cost": 0.0188, "output_cost": 0.0188},
+    "anthropic.claude-instant-v1": {"input_cost": 0.00163, "output_cost": 0.00551},
+    "anthropic.claude-v1": {"input_cost": 0.01102, "output_cost": 0.03268},
+    "anthropic.claude-v2": {"input_cost": 0.01102, "output_cost": 0.03268},
 }
 
 
